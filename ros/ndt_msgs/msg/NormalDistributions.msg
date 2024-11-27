@@ -1,2 +1,0 @@
-std_msgs/Header header
-ndt_msgs/NormalDistribution[] normal_distributions
