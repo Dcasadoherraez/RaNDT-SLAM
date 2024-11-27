@@ -11,7 +11,7 @@
         <node name="ndt_visualization" pkg="ndt_radar_slam" type="ndt_visualization"/>
     </group>
 
-    <node name="ndt_radar_slam" pkg="ndt_radar_slam" type="ndt_slam" output="screen"/>
+    <node name="ndt_radar_slam" pkg="ndt_radar_slam" type="ndt_slam" output="screen" />
     <node pkg="imu_transformer" type="imu_transformer_node" name="imu_data_transformer">
         <remap from="imu_in" to="$(arg raw_imu_topic)"/>
         <remap from="imu_out" to="/imu/transformed"/>

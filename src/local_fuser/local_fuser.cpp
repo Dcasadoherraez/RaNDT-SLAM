@@ -102,9 +102,9 @@ void LocalFuser::processScan(const sensor_msgs::PointCloud2::ConstPtr& msg, std:
   _preprocessor.processScan(msg, clusters, polar_detections, peak_detections); // get clusters, polar representations and maximum intensity beams
   HierarchicalMap current_scan;
   current_scan.initialize(parameters_.ndt_map_parameters, Eigen::Vector2f::Zero(), Eigen::Affine2f::Identity());
-  std::cout << "Here it works" << std::endl;
+  // std::cout << "Here it works" << std::endl;
   current_scan.addClusters(clusters, polar_detections, peak_detections); // create ndt of scan
-  std::cout << "Here it doesn't" << std::endl;
+  // std::cout << "Here it doesn't" << std::endl;
   
   // do matching only if the submap is currently holding data
   if (!_current_submap.isEmpty()) {
