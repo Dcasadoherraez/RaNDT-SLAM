@@ -19,12 +19,10 @@ endif()
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(Eigen3 REQUIRED) #3.4 REQUIRED NO_MODULE) # PATHS /usr/local/include/eigen3)
-find_package(PCL REQUIRED)
-find_package(Python COMPONENTS Interpreter Development)
-find_package(OpenCV REQUIRED)
-find_package(Ceres REQUIRED)
-find_package(Sophus REQUIRED)
+option(USE_SYSTEM_EIGEN3 "Use system pre-installed Eigen" ON)
+option(USE_SYSTEM_SOPHUS "Use system pre-installed Sophus" ON)
+include(3rdparty/find_dependencies.cmake)
+
 find_package(catkin REQUIRED
 	roscpp
 	std_msgs
@@ -35,6 +33,16 @@ find_package(catkin REQUIRED
   nav_msgs
   rosbag
 )
+find_package(GTest REQUIRED)
+
+# find_package(absl CONFIG REQUIRED)
+# find_package(Eigen3 REQUIRED) #3.4 REQUIRED NO_MODULE) # PATHS /usr/local/include/eigen3)
+find_package(PCL REQUIRED)
+find_package(Python COMPONENTS Interpreter Development)
+find_package(OpenCV REQUIRED)
+find_package(Ceres REQUIRED)
+find_package(Sophus REQUIRED)
+
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/include/eigen3")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/local/include/optim") # -I/usr/local/include/eigen3")

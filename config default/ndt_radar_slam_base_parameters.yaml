@@ -1,13 +1,13 @@
 ndt_slam:
   scan_publisher_topic: "/normal_distribution"        # visualizer topi of ndt scan
   map_publisher_topic: "/aligned_normal_distribution" # visualizer topic of ndt submap
-  scan_subscriber_topic: "/ars548"                    # pcl2 topic
-  imu_subscriber_topic: "/mti3dk/imu"                 # imu topic in base_frame
+  scan_subscriber_topic: "/radar_2/spectrum/pcl2"     # pcl2 topic
+  imu_subscriber_topic: "/imu/transformed/data"       # imu topic in base_frame
   odom_publisher_topic: "/ndt_odom"                   # odometry publisher topic 
   fixed_frame: "map"                                  # map frame
-  odom_frame: "ars548"                                  # odometry frame
-  base_frame: "ars548"                             # base frame, should be accurate for motion model
-  sensor_frame: "ars548"                     # sensor frame
+  odom_frame: "odom"                                  # odometry frame
+  base_frame: "base_link"                             # base frame, should be accurate for motion model
+  sensor_frame: "left_radar_link"                     # sensor frame
   visualize_ogm: true                                 # visualize ogm
   visualize_current_scan: true                        # visualize ndt of scam
   visualize_current_map: true                         # visualize ndt submap
@@ -56,8 +56,8 @@ ndt_matcher:
   csm_window_linear: 4.5             # maximum linear search window
 
 ndt_map:
-  size_x: 1000 # size of underlying map in cells
-  size_y: 1000 
+  size_x: 50 # size of underlying map in cells
+  size_y: 50 
   # resolution, max_neighbor_linf_dist, and min_points_per_cell are set depending on the environment 
 
 ogm_map:

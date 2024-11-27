@@ -38,6 +38,7 @@
 #include "ndt_registration/ndt_matcher.h"
 #include "ndt_slam_parameters.h"
 
+#include <sensor_msgs/point_cloud2_iterator.h>
 
 namespace rc {
 namespace navigation {

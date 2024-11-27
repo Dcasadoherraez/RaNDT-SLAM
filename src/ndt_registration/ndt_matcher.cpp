@@ -354,7 +354,7 @@ void Matcher::estimateTransformCeres(Sophus::SE2d& trans, std::vector<State>& tr
 
     for (size_t i = smoothing_steps_iter; i > 0; i--) {
       addMotionParameterBlock(problem, manifold, trajectory.end()[-i], false);
-      addMotionModelFactor(problem, trajectory.end()[-i-1], trajectory.end()[-i], parameters_.use_analytic_expressions_for_optimization, nullptr);
+      // addMotionModelFactor(problem, trajectory.end()[-i-1], trajectory.end()[-i], parameters_.use_analytic_expressions_for_optimization, nullptr);
 
       if (parameters_.use_imu) {
         addImuFactor(problem, trajectory.end()[-i-1], trajectory.end()[-i], trajectory, weight_imu, imu_constraints_.end()[-i-1], parameters_.use_analytic_expressions_for_optimization, nullptr);

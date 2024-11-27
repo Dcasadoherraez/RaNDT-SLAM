@@ -18,8 +18,8 @@ ndt_map:
   resolution: 1.0                          # side length of an NDT cell
 
 ogm_map:
-  size_x: 1000 # size of underlying map in m
-  size_y: 1000
+  size_x: 90 # size of underlying map in m
+  size_y: 90 
 
 ndt_matcher:
   gnc_control_parameter_divisor: 1.1       # k_mu to reduce convexity in each graduation step
@@ -39,9 +39,9 @@ ndt_matcher:
   weight_imu_bias: 750000.1                # weight if imu bias
 
 radar_preprocessor:
-  min_range: 5.0                # minimum range of sensor. Should filter out radome noise
-  max_range: 100.0               # maximum range of sensor
-  min_intensity: 0.0            # minimal intensity. Should filter out speckle noise
+  min_range: 0.6                # minimum range of sensor. Should filter out radome noise
+  max_range: 16.0               # maximum range of sensor
+  min_intensity: 6.0            # minimal intensity. Should filter out speckle noise
                                                                  
 scan_context:                   # no need to tune, work pretty well out of the box
   assumed_drift: 0.05           # odometric drift

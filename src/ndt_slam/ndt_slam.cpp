@@ -208,23 +208,78 @@ void NDTSlam::initializeOffline() {
   return;
 }
 
-void NDTSlam::radarCb(const sensor_msgs::PointCloud2::ConstPtr& msg) {
-  _last_header = msg->header;
+void NDTSlam::radarCb(const sensor_msgs::PointCloud2::ConstPtr& raw_msg) {
+  _last_header = raw_msg->header;
+
+  // Create a new PointCloud2 message for filtered data
+  sensor_msgs::PointCloud2 msg;
+  msg.header = raw_msg->header;
+  msg.height = raw_msg->height;
+  msg.width = raw_msg->width;
+  msg.is_bigendian = raw_msg->is_bigendian;
+  msg.point_step = 16;  // Only x, y, z (3 * 4 bytes) + intensity (4 bytes)
+  msg.row_step = msg.point_step * raw_msg->width;
+  msg.is_dense = raw_msg->is_dense;
+
+  // Add x, y, z, and intensity fields
+  msg.fields.resize(4);
+  msg.fields[0].name = "x";
+  msg.fields[0].offset = 0;
+  msg.fields[0].datatype = sensor_msgs::PointField::FLOAT32;
+  msg.fields[0].count = 1;
+
+  msg.fields[1].name = "y";
+  msg.fields[1].offset = 4;
+  msg.fields[1].datatype = sensor_msgs::PointField::FLOAT32;
+  msg.fields[1].count = 1;
+
+  msg.fields[2].name = "z";
+  msg.fields[2].offset = 8;
+  msg.fields[2].datatype = sensor_msgs::PointField::FLOAT32;
+  msg.fields[2].count = 1;
+
+  msg.fields[3].name = "intensity";
+  msg.fields[3].offset = 12;
+  msg.fields[3].datatype = sensor_msgs::PointField::FLOAT32;
+  msg.fields[3].count = 1;
+
+  // Allocate data for the filtered message
+  msg.data.resize(msg.row_step * msg.height);
+
+  // Use iterators to copy the required fields
+  sensor_msgs::PointCloud2ConstIterator<float> iter_x(*raw_msg, "x");
+  sensor_msgs::PointCloud2ConstIterator<float> iter_y(*raw_msg, "y");
+  sensor_msgs::PointCloud2ConstIterator<float> iter_z(*raw_msg, "z");
+  sensor_msgs::PointCloud2ConstIterator<float> iter_intensity(*raw_msg, "intensity");
+
+  sensor_msgs::PointCloud2Iterator<float> out_iter_x(msg, "x");
+  sensor_msgs::PointCloud2Iterator<float> out_iter_y(msg, "y");
+  sensor_msgs::PointCloud2Iterator<float> out_iter_z(msg, "z");
+  sensor_msgs::PointCloud2Iterator<float> out_iter_intensity(msg, "intensity");
+
+  for (; iter_x != iter_x.end(); ++iter_x, ++iter_y, ++iter_z, ++iter_intensity, ++out_iter_x, ++out_iter_y, ++out_iter_z, ++out_iter_intensity) {
+    *out_iter_x = *iter_x;
+    *out_iter_y = *iter_y;
+    *out_iter_z = *iter_z;
+    *out_iter_intensity = *iter_intensity;
+  }
+
+
   if (parameters_.use_imu && parameters_.online) {
     _local_fuser.processImu(cache.getElemBeforeTime(cache.getLatestTime())); // process latest imu message
   }
   std::vector<pcl::PointCloud<pcl::PointXYZI>> _clusters;
-	_local_fuser.processScan(msg, _clusters, nodes_, stamps_, edges_, submap_idzs_, nodes_mutex_); // process scan
+	_local_fuser.processScan(boost::make_shared<sensor_msgs::PointCloud2>(msg), _clusters, nodes_, stamps_, edges_, submap_idzs_, nodes_mutex_); // process scan
 
   if (_local_fuser.submapComplete()) { // initialize new submap if old submap is complete
     Eigen::Affine2f current_local_transform = _local_fuser.getTransform();
     _local_fuser.initializeNewSubmap(current_local_transform);
-	  _local_fuser.processScan(msg, _clusters, nodes_, stamps_, edges_, submap_idzs_, nodes_mutex_);
+	  _local_fuser.processScan(boost::make_shared<sensor_msgs::PointCloud2>(msg), _clusters, nodes_, stamps_, edges_, submap_idzs_, nodes_mutex_);
   }
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr debug_cloud = _local_fuser.getTransformedScan();  // vsualization clouds
   
-  std_msgs::Header header = msg->header; 
+  std_msgs::Header header = msg.header; 
   if (parameters_.visualize_current_scan) {
     HierarchicalMap hmap = _local_fuser.getLastMergedMap();
     if (!hmap.isEmpty()) {
@@ -246,7 +301,7 @@ void NDTSlam::radarCb(const sensor_msgs::PointCloud2::ConstPtr& msg) {
   tf2::Quaternion q(0.,0.,0.,1.0);
   q.setRPY(0., 0., Sophus::SE2f::fitToSE2(current_local_transform.matrix()).log()(2));
   tf2::Stamped<tf2::Transform> base_to_map(tf2::Transform(q, tf2::Vector3(current_local_transform.translation()(0),
-    current_local_transform.translation()(1), 0.0)).inverse(), msg->header.stamp, parameters_.base_frame);
+    current_local_transform.translation()(1), 0.0)).inverse(), msg.header.stamp, parameters_.base_frame);
 
   try
   {
@@ -270,7 +325,7 @@ void NDTSlam::radarCb(const sensor_msgs::PointCloud2::ConstPtr& msg) {
   tf2::convert(tf_transform, trans_msg.transform);
   trans_msg.child_frame_id = parameters_.odom_frame;
   trans_msg.header.frame_id = parameters_.fixed_frame;
-  trans_msg.header.stamp = msg->header.stamp;
+  trans_msg.header.stamp = msg.header.stamp;
   tfb.sendTransform(trans_msg);
 
   Eigen::Affine3d current_transform_3d = Eigen::Affine3d::Identity();
@@ -279,7 +334,7 @@ void NDTSlam::radarCb(const sensor_msgs::PointCloud2::ConstPtr& msg) {
 
   geometry_msgs::TransformStamped send_transform = tf2::eigenToTransform(current_transform_3d);
   send_transform.child_frame_id = "ndt_estimate";
-  send_transform.header.stamp = msg->header.stamp;
+  send_transform.header.stamp = msg.header.stamp;
   send_transform.header.frame_id = parameters_.fixed_frame;
 
   nav_msgs::Odometry odom_msg;
